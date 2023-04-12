@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfe1e3b23fe2e0849b8a9afbe71aeb02, type: 3}
+  m_Name: ProjectSettings
+  m_EditorClassIdentifier: 
+  ProjectInstallerSettings:
+    EventSystem: {fileID: 2322591228090291052, guid: 1dc8c65b65078d4498b890feef80c7e1, type: 3}
+    LoadingScreen: {fileID: 1268631347146761768, guid: 59bd32a572961c0438aca32d6fb984c5, type: 3}
+    CoroutineRunner: {fileID: 4925815939127129046, guid: b2a43d2e2ffc836488abd81347e06d3c, type: 3}
+  AnalyticsServiceSettings:
+    ServerURL: localhost
+    RequestMethod: POST
+    RequestContentType: application/json
+    CooldownBeforeSend: 60
+    BatchSize: 4
+  SceneServiceSettings:
+    MainMenu: {fileID: 11400000, guid: 40666c75c90c76540b89338ca944acf2, type: 2}
