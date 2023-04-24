@@ -1,10 +1,8 @@
-﻿using System;
-using UnityEngine.Networking;
+﻿using UnityEngine.Networking;
 
-namespace stroibot.Base.WebRequest
+namespace stroibot.WebRequest
 {
 	public interface IUnityWebRequest
-		: IDisposable
 	{
 		public string URL { get; set; }
 		public string Method { get; set; }

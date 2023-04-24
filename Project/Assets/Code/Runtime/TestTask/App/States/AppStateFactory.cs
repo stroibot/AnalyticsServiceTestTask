@@ -1,45 +1,48 @@
-﻿using UnityEngine;
-using Zenject;
+﻿using stroibot.Factory;
+using stroibot.Logging;
 
-namespace stroibot.TestTask.App.States
+namespace stroibot.TestTask
 {
 	public class AppStateFactory :
 		IFactory<AppStateTag, AppState>
 	{
-		private readonly DiContainer _container;
+		private static readonly string LogTag = $"{nameof(AppStateFactory)}";
+
+		private readonly App _app;
 		private readonly ILogger _logger;
 
 		public AppStateFactory(
-			DiContainer container,
+			App app,
 			ILogger logger)
 		{
-			_container = container;
+			_app = app;
 			_logger = logger;
 		}
 
-		public AppState Create(AppStateTag tag)
+		public AppState Create(
+			AppStateTag tag)
 		{
 			switch (tag)
 			{
 				case AppStateTag.Bootstrap:
 				{
-					return _container.Instantiate<BootstrapAppState>();
+					return new BootstrapAppState(_app);
 				}
 				case AppStateTag.MainMenu:
 				{
-					return _container.Instantiate<MainMenuAppState>();
+					return new MainMenuAppState(_app);
 				}
 				case AppStateTag.LoadMainMenu:
 				{
-					return _container.Instantiate<LoadMainMenuAppState>();
+					return new LoadMainMenuAppState(_app);
 				}
 				case AppStateTag.Exit:
 				{
-					return _container.Instantiate<ExitAppState>();
+					return new ExitAppState(_app);
 				}
 				default:
 				{
-					_logger.LogWarning(nameof(AppStateFactory), $"Unknown tag {tag} of {tag.GetType().Name}");
+					_logger.LogWarning(LogTag, $"Unknown tag {tag} of {tag.GetType().Name}");
 					return null;
 				}
 			}

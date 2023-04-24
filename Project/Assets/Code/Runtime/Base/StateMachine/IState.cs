@@ -1,4 +1,4 @@
-﻿namespace stroibot.Base.StateMachine
+﻿namespace stroibot.StateMachine
 {
 	public interface IState
 	{

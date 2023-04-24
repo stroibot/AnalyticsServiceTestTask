@@ -1,6 +1,4 @@
-﻿using UnityEngine;
-
-namespace stroibot.TestTask.App.States
+﻿namespace stroibot.TestTask
 {
 	public class ExitAppState :
 		AppState
@@ -13,9 +11,9 @@ namespace stroibot.TestTask.App.States
 		public override void OnEnter()
 		{
 			App.AnalyticsService.TrackEvent("app_exit", string.Empty);
+			App.AnalyticsService.SendPendingEvents();
 #if UNITY_EDITOR
-			Application.Quit();
-			App.Logger.Log("Application Quit");
+			App.Logger.Log(nameof(ExitAppState),"Application Quit");
 #endif
 		}
 	}

@@ -1,83 +1,61 @@
-﻿using stroibot.Base.Coroutine;
-using stroibot.Base.Saving;
-using stroibot.Base.Serializer;
-using stroibot.Base.WebRequest;
-using System;
-using System.Collections;
+﻿using stroibot.Logging;
+using stroibot.Saving;
+using stroibot.WebRequest;
 using System.Collections.Generic;
-using System.Text;
-using UnityEngine;
-using UnityEngine.Networking;
-using Zenject;
 
-namespace stroibot.Base.Analytics
+namespace stroibot.Analytics
 {
-	public class AnalyticsService :
-		IAnalyticsService,
-		IInitializable,
-		ITickable,
-		IDisposable
+	public class AnalyticsService
 	{
-		[Serializable]
-		public class Settings
-		{
-			public string ServerURL;
-			public string RequestMethod;
-			public string RequestContentType;
-			public float CooldownBeforeSend;
-			public int BatchSize;
-		}
-
-		[Serializable]
-		private class EventsData : ISaveData
-		{
-			public List<Event> events;
-		}
-
+		private static readonly string LogTag = $"{nameof(AnalyticsService)}";
 		private const string AnalyticsEventsSaveFilename = "analytics_events.json";
 
-		private readonly Settings _settings;
+		private readonly AnalyticsServiceSettings _settings;
 		private readonly ILogger _logger;
-		private readonly ISerializer _serializer;
-		private readonly ICoroutineRunner _coroutineRunner;
-		private readonly UnityWebRequestFactory _webRequestFactory;
-		private readonly Event.Factory _eventFactory;
+		private readonly EventFactory _eventFactory;
 		private readonly SaveService _saveService;
-		private readonly List<Event> _events;
+		private readonly WebRequestConfigurator _webRequestConfigurator;
+		private readonly WebRequestSender _webRequestSender;
 
-		private DateTime _lastSentTime = DateTime.MinValue;
-		private bool _isSending;
+		private EventsData _eventsData;
 
 		public AnalyticsService(
-			Settings settings,
+			AnalyticsServiceSettings settings,
 			ILogger logger,
-			ISerializer serializer,
-			ICoroutineRunner coroutineRunner,
-			UnityWebRequestFactory webRequestFactory,
-			Event.Factory eventFactory,
-			SaveService.Factory saveServiceFactory)
+			EventFactory eventFactory,
+			SaveService saveService,
+			WebRequestConfigurator webRequestConfigurator,
+			WebRequestSender webRequestSender)
 		{
 			_settings = settings;
 			_logger = logger;
-			_serializer = serializer;
-			_coroutineRunner = coroutineRunner;
-			_webRequestFactory = webRequestFactory;
 			_eventFactory = eventFactory;
-			_saveService = saveServiceFactory.Create(new EventsData());
-			_events = new List<Event>(_settings.BatchSize);
+			_saveService = saveService;
+			_webRequestConfigurator = webRequestConfigurator;
+			_webRequestSender = webRequestSender;
+			_webRequestSender.CooldownBeforeSend = _settings.CooldownBeforeSend;
+			_eventsData = new EventsData()
+			{
+				Events = new List<Event>(_settings.BatchSize)
+			};
 		}
 
-		public void TrackEvent(string type, string data)
+		public void TrackEvent(
+			string type,
+			string data)
 		{
 			var @event = _eventFactory.Create(type, data);
-			_events.Add(@event);
+			_eventsData.Events.Add(@event);
+			_saveService.Save(_eventsData, AnalyticsEventsSaveFilename);
 			CheckAndSendEvents();
 		}
 
-		public void Initialize()
+		public void LoadAndSendPendingEvents()
 		{
-			LoadEventsFromFile();
-			_coroutineRunner.StartCoroutine(SendEvents());
+			if (_saveService.Load(ref _eventsData, AnalyticsEventsSaveFilename))
+			{
+				SendPendingEvents();
+			}
 		}
 
 		public void Tick()
@@ -85,75 +63,46 @@ namespace stroibot.Base.Analytics
 			CheckAndSendEvents();
 		}
 
-		public void Dispose()
+		public void SendPendingEvents()
 		{
-			_coroutineRunner.StartCoroutine(SendEvents());
+			if (_eventsData.Events.Count == 0)
+			{
+				return;
+			}
+
+			if (!_webRequestSender.IsReady)
+			{
+				_saveService.Save(_eventsData, AnalyticsEventsSaveFilename);
+				return;
+			}
+
+			_webRequestConfigurator.Configure(
+				_settings.ServerURL,
+				_settings.RequestMethod,
+				_settings.RequestContentType,
+				_eventsData);
+			_webRequestSender.Send(
+				_webRequestConfigurator.Request,
+				() =>
+				{
+					_eventsData.Events.Clear();
+					_logger.Log(LogTag, "Events were sent successfully");
+					_saveService.Delete(AnalyticsEventsSaveFilename);
+				},
+				() =>
+				{
+					_logger.LogWarning(LogTag, "Failed to send events");
+					_saveService.Save(_eventsData, AnalyticsEventsSaveFilename);
+				});
 		}
 
 		private void CheckAndSendEvents()
 		{
-			if (!_isSending && _events.Count >= _settings.BatchSize && (DateTime.Now - _lastSentTime).TotalSeconds >= _settings.CooldownBeforeSend)
+			if (_eventsData.Events.Count >= _settings.BatchSize &&
+				_webRequestSender.IsReady)
 			{
-				_coroutineRunner.StartCoroutine(SendEvents());
+				SendPendingEvents();
 			}
-		}
-
-		private IEnumerator SendEvents()
-		{
-			if (_events.Count == 0)
-			{
-				yield break;
-			}
-
-			_isSending = true;
-			var eventsToSend = new List<Event>(_events);
-			_events.Clear();
-			var json = _serializer.Serialize(new EventsData { events = eventsToSend });
-			var request = _webRequestFactory.Create(_settings.ServerURL, _settings.RequestMethod);
-			byte[] bodyRaw = Encoding.UTF8.GetBytes(json);
-			request.UploadHandler = new UploadHandlerRaw(bodyRaw);
-			request.DownloadHandler = new DownloadHandlerBuffer();
-			request.SetRequestHeader("Content-Type", _settings.RequestContentType);
-
-			yield return request.SendWebRequest();
-
-			if (request.Result == UnityWebRequest.Result.Success && request.ResponseCode == 200)
-			{
-				_logger.Log(nameof(AnalyticsService), "Events were sent successfully");
-				_lastSentTime = DateTime.Now;
-				DeleteEventsFile();
-			}
-			else
-			{
-				_logger.LogWarning(nameof(AnalyticsService), "Failed to send events");
-				_events.AddRange(eventsToSend);
-				SaveEventsToFile();
-			}
-
-			_isSending = false;
-			request.Dispose();
-		}
-
-		private void SaveEventsToFile()
-		{
-			var saveData = _saveService.SaveData as EventsData;
-			saveData.events = _events;
-			_saveService.Save(AnalyticsEventsSaveFilename);
-		}
-
-		private void LoadEventsFromFile()
-		{
-			if (_saveService.Load(AnalyticsEventsSaveFilename))
-			{
-				var saveData = _saveService.SaveData as EventsData;
-				var events = saveData.events;
-				_events.AddRange(events);
-			}
-		}
-
-		private void DeleteEventsFile()
-		{
-			_saveService.Delete(AnalyticsEventsSaveFilename);
 		}
 	}
 }

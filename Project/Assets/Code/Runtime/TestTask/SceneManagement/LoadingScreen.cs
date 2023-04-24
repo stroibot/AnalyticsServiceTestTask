@@ -1,7 +1,7 @@
-﻿using stroibot.Base.SceneManagement;
+﻿using stroibot.SceneManagement;
 using UnityEngine;
 
-namespace stroibot.TestTask.SceneManagement
+namespace stroibot.TestTask
 {
 	public class LoadingScreen :
 		MonoBehaviour,
@@ -9,7 +9,8 @@ namespace stroibot.TestTask.SceneManagement
 	{
 		[SerializeField] private GameObject _loadingInterface;
 
-		public void Toggle(bool active)
+		public void Toggle(
+			bool active)
 		{
 			_loadingInterface.SetActive(active);
 		}

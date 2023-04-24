@@ -1,5 +1,4 @@
-using stroibot.Base.Analytics;
-using stroibot.TestTask.SceneManagement;
+using stroibot.Analytics;
 using UnityEngine;
 using Zenject;
 
@@ -9,15 +8,21 @@ namespace stroibot.TestTask
 	public class ProjectSettingsInstaller :
 		ScriptableObjectInstaller<ProjectSettingsInstaller>
 	{
-		public ProjectInstaller.Settings ProjectInstallerSettings;
-		public AnalyticsService.Settings AnalyticsServiceSettings;
-		public SceneService.Settings SceneServiceSettings;
+		public ProjectSettings ProjectInstallerSettings;
+		public AnalyticsServiceSettings AnalyticsServiceSettings;
+		public SceneServiceSettings SceneServiceSettings;
 
 		public override void InstallBindings()
 		{
-			Container.BindInstance(ProjectInstallerSettings).IfNotBound();
-			Container.BindInstance(AnalyticsServiceSettings).IfNotBound();
-			Container.BindInstance(SceneServiceSettings).IfNotBound();
+			Container
+				.BindInstance(ProjectInstallerSettings)
+				.IfNotBound();
+			Container
+				.BindInstance(AnalyticsServiceSettings)
+				.IfNotBound();
+			Container
+				.BindInstance(SceneServiceSettings)
+				.IfNotBound();
 		}
 	}
 }

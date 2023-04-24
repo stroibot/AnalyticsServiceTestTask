@@ -1,6 +1,6 @@
 ﻿using System.Collections;
 
-namespace stroibot.Base.Coroutine
+namespace stroibot.Coroutine
 {
 	public interface ICoroutineRunner
 	{

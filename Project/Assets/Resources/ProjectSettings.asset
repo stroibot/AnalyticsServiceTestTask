@@ -20,7 +20,7 @@ MonoBehaviour:
     ServerURL: localhost
     RequestMethod: POST
     RequestContentType: application/json
-    CooldownBeforeSend: 60
+    CooldownBeforeSend: 30
     BatchSize: 4
   SceneServiceSettings:
     MainMenu: {fileID: 11400000, guid: 40666c75c90c76540b89338ca944acf2, type: 2}

@@ -1,27 +1,21 @@
-﻿using stroibot.Base.SceneManagement;
-using System;
+﻿using System;
 
-namespace stroibot.TestTask.SceneManagement
+namespace stroibot.TestTask
 {
 	public class SceneService
 	{
-		[Serializable]
-		public class Settings
-		{
-			public GameScene MainMenu;
-		}
-
-		private readonly Settings _settings;
+		private readonly SceneServiceSettings _settings;
 
 		private bool _isLoading;
 
 		public SceneService(
-			Settings settings)
+			SceneServiceSettings settings)
 		{
 			_settings = settings;
 		}
 
-		public void LoadMainMenu(Action callback)
+		public void LoadMainMenu(
+			Action callback)
 		{
 			if (_isLoading)
 			{

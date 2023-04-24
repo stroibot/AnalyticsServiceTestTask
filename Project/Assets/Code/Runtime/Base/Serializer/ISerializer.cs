@@ -1,4 +1,4 @@
-﻿namespace stroibot.Base.Serializer
+﻿namespace stroibot.Serializer
 {
 	public interface ISerializer
 	{

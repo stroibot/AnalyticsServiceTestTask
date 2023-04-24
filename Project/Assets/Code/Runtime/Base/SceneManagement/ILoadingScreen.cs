@@ -1,4 +1,4 @@
-﻿namespace stroibot.Base.SceneManagement
+﻿namespace stroibot.SceneManagement
 {
 	public interface ILoadingScreen
 	{

@@ -1,13 +1,10 @@
-﻿using stroibot.Base.StateMachine;
-using Zenject;
+﻿using stroibot.StateMachine;
 
-namespace stroibot.TestTask.App.States
+namespace stroibot.TestTask
 {
 	public abstract class AppState :
 		IState
 	{
-		public class Factory : PlaceholderFactory<AppStateTag, AppState> { }
-
 		protected readonly App App;
 
 		protected AppState(

@@ -1,4 +1,4 @@
-﻿namespace stroibot.TestTask.App.States
+﻿namespace stroibot.TestTask
 {
 	public class MainMenuAppState :
 		AppState

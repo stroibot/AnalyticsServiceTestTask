@@ -1,38 +1,20 @@
-using stroibot.Base.Analytics;
-using stroibot.Base.Base.WebRequest;
-using stroibot.Base.Coroutine;
-using stroibot.Base.FileSystem;
-using stroibot.Base.Saving;
-using stroibot.Base.SceneManagement;
-using stroibot.Base.Serializer;
-using stroibot.Base.StateMachine;
+using stroibot.Analytics;
 using stroibot.Base.WebRequest;
-using stroibot.TestTask.App.States;
-using stroibot.TestTask.SceneManagement;
-using System;
-using UnityEngine;
+using stroibot.Coroutine;
+using stroibot.FileSystem;
+using stroibot.Saving;
+using stroibot.SceneManagement;
+using stroibot.Serializer;
+using stroibot.StateMachine;
+using stroibot.WebRequest;
 using Zenject;
-using Event = stroibot.Base.Analytics.Event;
 
 namespace stroibot.TestTask
 {
 	public class ProjectInstaller :
 		MonoInstaller
 	{
-		[Serializable]
-		public class Settings
-		{
-			[Header("Event System")]
-			public GameObject EventSystem;
-
-			[Header("Scene Management")]
-			public GameObject LoadingScreen;
-
-			[Header("Misc")]
-			public GameObject CoroutineRunner;
-		}
-
-		[Inject] private Settings _settings;
+		[Inject] private ProjectSettings _settings;
 
 		public override void InstallBindings()
 		{
@@ -50,19 +32,17 @@ namespace stroibot.TestTask
 
 		private void InstallLogging()
 		{
-			var logger = new Logger(Debug.unityLogger.logHandler);
-
 			Container
-				.Bind<ILogger>()
-				.To<Logger>()
-				.FromInstance(logger);
+				.Bind<Logging.ILogger>()
+				.To<Logging.Logger>()
+				.AsSingle();
 		}
 
 		private void InstallFileSystem()
 		{
 			Container
 				.Bind<IFileSystem>()
-				.To<FileSystem>()
+				.To<FileSystem.FileSystem>()
 				.AsSingle();
 		}
 
@@ -86,24 +66,29 @@ namespace stroibot.TestTask
 				.Bind<IUnityWebRequest>()
 				.To<MockUnityWebRequestWrapper>()
 				.AsTransient();
-
 			Container
-				.BindFactory<string, string, IUnityWebRequest, UnityWebRequestFactory>()
-				.To<MockUnityWebRequestWrapper>();
+				.Bind<WebRequestConfigurator>()
+				.AsTransient();
+			Container
+				.Bind<WebRequestSender>()
+				.AsTransient();
 		}
 
 		private void InstallSaving()
 		{
 			Container
-				.BindFactory<ISaveData, SaveService, SaveService.Factory>();
+				.Bind<SaveService>()
+				.AsSingle();
 		}
 
 		private void InstallAnalytics()
 		{
 			Container
-				.BindFactory<string, string, Event, Event.Factory>()
-				.FromPoolableMemoryPool(pool => pool.WithInitialSize(8));
-
+				.Bind<Event>()
+				.AsTransient();
+			Container
+				.Bind<EventFactory>()
+				.AsSingle();
 			Container
 				.BindInterfacesAndSelfTo<AnalyticsService>()
 				.AsSingle();
@@ -116,7 +101,6 @@ namespace stroibot.TestTask
 				.To<LoadingScreen>()
 				.FromComponentInNewPrefab(_settings.LoadingScreen)
 				.AsSingle();
-
 			Container
 				.Bind<SceneService>()
 				.AsSingle();
@@ -127,13 +111,11 @@ namespace stroibot.TestTask
 			Container
 				.Bind<StateMachine<AppStateTag>>()
 				.AsSingle();
-
 			Container
-				.BindFactory<AppStateTag, AppState, AppState.Factory>()
-				.FromFactory<AppStateFactory>();
-
+				.Bind<AppStateFactory>()
+				.AsSingle();
 			Container
-				.BindInterfacesAndSelfTo<App.App>()
+				.BindInterfacesAndSelfTo<App>()
 				.AsSingle();
 		}
 

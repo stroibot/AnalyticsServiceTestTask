@@ -1,8 +1,8 @@
-﻿using System;
+﻿using stroibot.Logging;
+using System;
 using System.Collections.Generic;
-using UnityEngine;
 
-namespace stroibot.Base.StateMachine
+namespace stroibot.StateMachine
 {
 	public class StateMachine<TTag>
 		where TTag : Enum
@@ -23,7 +23,9 @@ namespace stroibot.Base.StateMachine
 			_stateHistory = new Stack<IState>();
 		}
 
-		public void Add(TTag tag, IState state)
+		public void Add(
+			TTag tag,
+			IState state)
 		{
 			if (_states.ContainsKey(tag))
 			{
@@ -33,7 +35,8 @@ namespace stroibot.Base.StateMachine
 			_states.Add(tag, state);
 		}
 
-		public void SwitchToState(IState newState)
+		public void SwitchToState(
+			IState newState)
 		{
 			if (newState == CurrentState)
 			{
@@ -59,7 +62,8 @@ namespace stroibot.Base.StateMachine
 			newState.OnEnter();
 		}
 
-		public void Enter(TTag tag)
+		public void Enter(
+			TTag tag)
 		{
 			if (_states.TryGetValue(tag, out IState newState))
 			{

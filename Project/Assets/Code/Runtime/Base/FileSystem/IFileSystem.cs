@@ -1,4 +1,4 @@
-﻿namespace stroibot.Base.FileSystem
+﻿namespace stroibot.FileSystem
 {
 	public interface IFileSystem
 	{

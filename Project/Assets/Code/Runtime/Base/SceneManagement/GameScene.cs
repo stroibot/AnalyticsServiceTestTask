@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-namespace stroibot.Base.SceneManagement
+namespace stroibot.SceneManagement
 {
 	[CreateAssetMenu(fileName = "GameScene", menuName = "Data/Game Scene/Game Scene")]
 	public class GameScene :

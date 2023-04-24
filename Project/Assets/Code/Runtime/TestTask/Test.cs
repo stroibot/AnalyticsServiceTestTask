@@ -6,11 +6,11 @@ namespace stroibot.TestTask
 	public class Test :
 		MonoBehaviour
 	{
-		private App.App _app;
+		private App _app;
 
 		[Inject]
 		public void Construct(
-			App.App app)
+			App app)
 		{
 			_app = app;
 		}

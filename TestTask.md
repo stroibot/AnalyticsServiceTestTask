@@ -42,7 +42,7 @@ It is also important to ensure guaranteed delivery of events to the server. Even
 
 The analytics server may not always be available (for example, there is no network on the phone), so successful sending may occur after an indefinite time. If the application has terminated (or crashed by mistake), then undelivered events should be sent the next time the application is launched (we assume that the service starts with the application). Thus, events should not be lost.
 
-It is enough to place the service itself in the MonoBehaviour heir class, for example:
+It is enough to place the service itself in the MonoBehaviour class, for example:
 ```c#
     public class EventService : MonoBehaviour {
         public void TrackEvent(string type, string data) { }
