@@ -6,7 +6,6 @@
   - [Introduction](#introduction)
   - [Description](#description)
   - [Run](#run)
-  - [Known Bugs](#known-bugs)
 
 </details>
 
@@ -30,7 +29,7 @@ This project contains basic architecture for an App.
 Lifecycle of the App is managed using a simple State Machine, which triggers `AnalyticsService.TrackEvent` to record specific app events.
 
 `AnalyticsService` has next features:
-* Batching: when you call `TrackEvent` event is not sent immediatley, but instead collected and sent only when the count of events is great or equal than the `BatchSize`
+* Batching: when you call `TrackEvent` event is not sent immediatley, but instead collected and sent only when the count of events is greater than or equal to `BatchSize`
 * If you call `TrackEvent` and `AnalyticsService` already is sending events, then new event won't be sent, but instead added to the next batch to prevent any unwanted behavior
 * `AnalyticsService` sends events every `CooldownBeforeSend`
 * When app is closed/crashed, the `AnalyticsService` tries to send current events, if they can't be sent, then these events will be stored locally in a file
@@ -39,10 +38,6 @@ Lifecycle of the App is managed using a simple State Machine, which triggers `An
 
 ## Run
 
-You can run build WebGL [here](https://stroibot.github.io/AnalyticsServiceTestTask/).
+You can run WebGL build [here](https://stroibot.github.io/AnalyticsServiceTestTask/).
 
 To view logs, please, use built-in developer console in your browser.
-
-## Known Bugs
-
-When the app is closed, the `CoroutineRunner` gets destroyed earlier than the `AnalyticsService.Dispose` is called. I'm not gonna address that now.
